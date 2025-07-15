@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v3-3/members")
+//@CrossOrigin("http://127.0.0.1:5500")
 public class MemberController3_3 {
 
     private Map<String, Member> memberStore = new HashMap<>();
