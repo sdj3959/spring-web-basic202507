@@ -2,12 +2,16 @@ package com.spring.basic.chap5_3.controller;
 
 import com.spring.basic.chap3_2.entity.Member;
 import com.spring.basic.chap5_3.dto.request.MemberCreateDto;
+import com.spring.basic.chap5_4.dto.response.MemberListResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -59,6 +63,19 @@ public class MemberController5_3 {
 
         ArrayList<Member> members = new ArrayList<>(memberStore.values());
 
+        List<MemberListResponse> responses = new ArrayList<>();
+
+        for (Member m : members) {
+            MemberListResponse listResponse = new MemberListResponse();
+            listResponse.setId(m.getUid());
+            listResponse.setEmail(m.getAccount());
+            String originNick = m.getNickname();
+            String maskingNick = "" + m.getNickname().charAt(0) + "*" + originNick.charAt(originNick.length() - 1);
+            listResponse.setNick(maskingNick);
+
+            responses.add(listResponse);
+        }
+
         log.debug("members.size = {}", members.size());
 
         if (members.size() <= 0) {
@@ -78,19 +95,43 @@ public class MemberController5_3 {
 
         return ResponseEntity
                 .ok()
-                .body(members)
+                .body(responses)
                 ;
     }
 
     // 회원 생성
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody MemberCreateDto dto) {
+    public ResponseEntity<?> create(
+            @RequestBody @Valid MemberCreateDto dto
+            // 입력값 검증 오류 내용을 갖고있는 객체
+            , BindingResult bindingResult
+    ) {
+        if (bindingResult.hasErrors()) { // 검증결과 에러가 있다면
+            Map<String, String> errorMap = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(err -> {
+                errorMap.put(err.getField(), err.getDefaultMessage());
+            });
+
+            log.warn("회원가입 입력값 오류가 발생함!");
+            return ResponseEntity.badRequest().body(errorMap);
+        }
 
         log.info("param - {}", dto);
 
-        return null;
-//        memberStore.put(member.getAccount(), member);
-//
-//        return ResponseEntity.ok("created member: " + member);
+        // 데이터 베이스 저장 : UID를 포함, 비밀번호를 인코딩
+        // dto -> entity로 변환하는 과정
+//        Member member = Member.builder()
+//                        .account(dto.getUserAcc())
+//                                .password(dto.getPw())
+//                                        .nickname(dto.getNick())
+//                                                .build();
+
+//        Member member = new Member(dto);
+
+        Member member = MemberCreateDto.from(dto);
+
+        memberStore.put(dto.getUserAcc(), member);
+
+        return ResponseEntity.ok("created member: " + member);
     }
 }
