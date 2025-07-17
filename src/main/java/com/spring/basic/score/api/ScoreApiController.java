@@ -77,6 +77,15 @@ public class ScoreApiController {
         return ResponseEntity.ok().body("성적 정보 삭제 성공 - " + id);
     }
 
+    // 성정 정보 개별 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<?> scoreDetail(@PathVariable Long id) {
+        Score score = scoreStore.get(id);
+
+
+        return ResponseEntity.ok(score);
+    }
+
 
     // 성적 정보 전체 조회
     @GetMapping

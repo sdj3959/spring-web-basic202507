@@ -89,11 +89,12 @@
     <script>
 
       // const pathname = window.location.pathname;
-      // console.log(pathname);
+      // console.log(pathname.substring(pathname.lastIndexOf('/')+1));
+      // const id = pathname.substring(pathname.lastIndexOf('/')+1));
 
 
       async function fetchDetail() {
-        const res = await fetch(`/api/v1/scores/${id}`);
+        const res = await fetch(`/api/v1/scores/${stuId}`);
         const data = await res.json();
         console.log(data);
 
