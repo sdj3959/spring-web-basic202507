@@ -1,107 +1,82 @@
 package com.spring.basic.score.api;
 
-import com.spring.basic.score.dto.request.ScoreRequestDTO;
-import com.spring.basic.score.dto.request.ScoreUpdateRequestDTO;
-import com.spring.basic.score.dto.response.ScoreDetailResponseDTO;
-import com.spring.basic.score.dto.response.ScoreListResponseDTO;
-import com.spring.basic.score.service.ScoreService;
-import lombok.RequiredArgsConstructor;
+import com.spring.basic.score.dto.response.ScoreListResponse;
+import com.spring.basic.score.entity.Score;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
-// JavaScript의 fetch 요청(비동기)을 처리하고, 순수 데이터(JSON)를 응답하는 컨트롤러.
 @RestController
 @RequestMapping("/api/v1/scores")
-@RequiredArgsConstructor
+@Slf4j // 로그 라이브러리
 public class ScoreApiController {
 
-    private final ScoreService scoreService;
+    // 저장소 역할을 할 해시맵
+    private Map<Long, Score> scoreStore = new HashMap<>();
 
-    // 성적 목록 조회
-    // URL: /api/v1/scores?sort=average
+    private Long nextId = 1L;
+
+    public ScoreApiController() {
+        Score s1 = new Score(nextId++, "김말복", 100, 88, 75);
+        Score s2 = new Score(nextId++, "박수포자", 55, 95, 15);
+        Score s3 = new Score(nextId++, "김마이클", 99, 100, 90);
+        Score s4 = new Score(nextId++, "세종대왕", 100, 0, 90);
+
+        scoreStore.put(s1.getId(), s1);
+        scoreStore.put(s2.getId(), s2);
+        scoreStore.put(s3.getId(), s3);
+        scoreStore.put(s4.getId(), s4);
+    }
+
+    // 성적 정보 전체 조회
     @GetMapping
-    public ResponseEntity<List<ScoreListResponseDTO>> getScores(@RequestParam(defaultValue = "id") String sort) {
-        List<ScoreListResponseDTO> list = scoreService.getList(sort);
-        return ResponseEntity.ok().body(list);
-    }
-
-    // 성적 상세 조회
-    // URL: /api/v1/scores/3
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getScore(@PathVariable long id) {
-        ScoreDetailResponseDTO dto = scoreService.retrieve(id);
-        if (dto == null) {
-            return ResponseEntity.notFound().build(); // 404 Not Found 응답
-        }
-        return ResponseEntity.ok().body(dto);
-    }
-
-    // 성적 등록
-    // URL: /api/v1/scores (POST 방식)
-    @PostMapping
-    public ResponseEntity<?> createScore(
-            @Validated @RequestBody ScoreRequestDTO requestDTO,
-            BindingResult result // @Validated의 검증 결과를 담는 객체
+    public ResponseEntity<?> scoreList(
+            @RequestParam(defaultValue = "id") String sort
     ) {
-        // 입력값 검증(Validation)에 실패한 경우
-        if (result.hasErrors()) {
-            Map<String, String> errorMap = new HashMap<>();
-            for (FieldError error : result.getFieldErrors()) {
-                // error.getField() : DTO의 필드명 (korean, english 등)
-                // error.getDefaultMessage() : DTO에 작성한 메시지
-                errorMap.put(error.getField(), error.getDefaultMessage());
-            }
-            // 400 Bad Request와 함께 에러 메시지 맵을 응답.
-            return ResponseEntity.badRequest().body(errorMap);
-        }
 
-        scoreService.register(requestDTO);
-        // 성공 시 200 OK와 함께 성공 메시지를 응답.
-        return ResponseEntity.ok().body("create success!");
+        log.info("/api/v1/scores GET !");
+        log.debug("param: sort - {}", sort);
+
+        // 클라이언트에게 성적정보 목록을 JSON 반환
+        List<Score> scores = new ArrayList<>(scoreStore.values());
+
+        // 깔끔하게 응답데이터들을 모아둔 DTO로 변환
+        // 석차를 구하는 로직
+        calculateListRank(scores);
+
+        List<ScoreListResponse> responses = scores.stream()
+                .map(ScoreListResponse::from)
+                .collect(Collectors.toList());
+
+        // 정렬 처리
+        responses.sort(getScoreComparator(sort));
+
+        return ResponseEntity.ok().body(responses);
     }
 
-    // 성적 삭제
-    // URL: /api/v1/scores/3 (DELETE 방식)
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteScore(@PathVariable long id) {
-        scoreService.delete(id);
-        return ResponseEntity.ok().body("delete success!");
+
+    private Comparator<ScoreListResponse> getScoreComparator(String sort) {
+        Comparator<ScoreListResponse> comparator = null;
+        switch (sort) {
+            case "id" -> comparator = Comparator.comparing(ScoreListResponse::getId);
+            case "name" -> comparator = Comparator.comparing(ScoreListResponse::getMaskingName);
+            case "average" -> comparator = Comparator.comparing(ScoreListResponse::getAvg).reversed();
+        }
+        return comparator;
     }
 
-    // 성적 정보 수정 (PUT 또는 PATCH 방식)
-    // PATCH는 일부만 수정, PUT은 전체를 교체하는 의미. 여기서는 PUT을 사용.
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateScore(
-            @PathVariable long id, // URL 경로에서 학번을 읽음
-            @Validated @RequestBody ScoreUpdateRequestDTO requestDTO, // 요청 본문의 JSON을 DTO로 변환 및 검증
-            BindingResult result
-    ) {
-        // 입력값 검증(Validation)에 실패한 경우
-        if (result.hasErrors()) {
-            Map<String, String> errorMap = new HashMap<>();
-            for (FieldError error : result.getFieldErrors()) {
-                // JSP의 에러 메시지 span의 id와 맞추기 위해 필드명 가공
-                String fieldName = error.getField(); // "kor", "eng" 등
-                errorMap.put(fieldName, error.getDefaultMessage());
-            }
-            return ResponseEntity.badRequest().body(errorMap);
-        }
-
-        try {
-            // 서비스 계층에 수정 로직 위임
-            scoreService.update(id, requestDTO);
-            return ResponseEntity.ok().build(); // 성공 시 200 OK
-        } catch (Exception e) {
-            // e.getMessage() 등을 로그로 남기는 것이 좋음
-            return ResponseEntity.notFound().build(); // 존재하지 않는 ID 등으로 인한 예외 발생 시 404
+    // 원본 리스트에서 석차를 구해서 세팅
+    private void calculateListRank(List<Score> scores) {
+        // 총점 내림차로 정렬
+        scores.sort(Comparator.comparing(Score::getTotal).reversed());
+        for (int i = 0; i < scores.size(); i++) {
+            scores.get(i).setRank(i + 1);
         }
     }
-
 }

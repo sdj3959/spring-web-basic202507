@@ -2,186 +2,269 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title} 애플리케이션</title>
 
+    <!-- reset css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reset-css@5.0.1/reset.min.css">
+
+    <!-- bootstrap css -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
+
+    <!-- bootstrap js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" defer></script>
+
+    <!-- jquery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <style>
-        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
-        .container { max-width: 960px; }
-        .error { color: #dc3545; font-size: 0.875em; }
-        .del-btn { cursor: pointer; }
+        label {
+            display: block;
+        }
+
+        .score-list>li {
+            margin-bottom: 10px;
+        }
+
+        .score-list>li:first-child {
+            font-size: 1.2em;
+            color: blue;
+            font-weight: 700;
+            border-bottom: 1px solid skyblue;
+        }
+
+        .del-btn {
+            width: 10px;
+            height: 10px;
+            background: red;
+            color: #fff;
+            border-radius: 5px;
+            margin-left: 5px;
+            text-decoration: none;
+            font-size: 0.7em;
+            padding: 6px;
+        }
+
+        .del-btn:hover {
+            background: orangered;
+        }
+
+        section.score {
+            padding: 50px 50px 100px;
+            font-size: 1.5em;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+
+            width: 50%;
+        }
+        .list-header .sort-link-group {
+            display: flex;
+
+        }
+        .list-header .sort-link-group div {
+            margin-right: 20px;
+        }
+
+        .error {
+            color: red;
+        }
     </style>
 </head>
+
 <body>
-    <div class="container py-5">
-        <header class="text-center mb-5">
+
+    <div class="wrap">
+
+        <section class="score">
             <h1>${title} 애플리케이션</h1>
-        </header>
 
-        <section class="register-form mb-5 p-4 border rounded bg-light shadow-sm">
-            <form id="score-form">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label for="name-input" class="form-label">이름</label>
-                        <input type="text" id="name-input" name="studentName" class="form-control">
-                        <p class="error" id="studentName"></p>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="kor-input" class="form-label">국어</label>
-                        <input type="number" id="kor-input" name="korean" class="form-control">
-                        <p class="error" id="korean"></p>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="eng-input" class="form-label">영어</label>
-                        <input type="number" id="eng-input" name="english" class="form-control">
-                        <p class="error" id="english"></p>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="math-input" class="form-label">수학</label>
-                        <input type="number" id="math-input" name="math" class="form-control">
-                        <p class="error" id="math"></p>
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary w-100">등록하기</button>
-                    </div>
-                </div>
-            </form>
-        </section>
-
-        <section class="list-section">
-            <header class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0">총 학생 수: <span id="student-count">0</span>명</h3>
-                <div class="sort-links">
-                    <a href="#" class="text-decoration-none me-3" data-sort="id">학번순</a>
-                    <a href="#" class="text-decoration-none me-3" data-sort="name">이름순</a>
-                    <a href="#" class="text-decoration-none" data-sort="average">평균순</a>
-                </div>
-            </header>
-            <ul id="score-list-container" class="list-group">
-                <!-- 학생 목록이 여기에 동적으로 렌더링됩니다. -->
+            <%--  JSP 주석
+            <ul>
+                <c:forEach var="f" items="${foods}">
+                    <li>${f}</li>
+                </c:forEach>
             </ul>
+            --%>
+
+            <form id="score-form">
+                <label>
+                    # 이름: <input type="text" name="name">
+                    <p class="error" id="studentName"></p>
+                </label>
+                <label>
+                    # 국어: <input type="text" name="kor">
+                    <p class="error" id="korean"></p>
+                </label>
+                <label>
+                    # 영어: <input type="text" name="eng">
+                    <p class="error" id="english"></p>
+                </label>
+                <label>
+                    # 수학: <input type="text" name="math">
+                    <p class="error" id="math"></p>
+                </label>
+                <label>
+                    <button id="createBtn" type="submit">확인</button>
+                    <button id="go-home" type="button">홈화면으로</button>
+                </label>
+            </form>
+
+            <hr>
+
+            <ul class="score-list">
+                <li class="list-header">
+                    <div class="count">총 학생 수: <span id="count">0</span>명</div>
+                    <div class="sort-link-group">
+                        <div><a id="id" href="#">학번순</a></div>
+                        <div><a id="name" href="#">이름순</a></div>
+                        <div><a id="average" href="#">평균순</a></div>
+                    </div>
+                </li>
+
+                <!-- 학생 성적정보가 들어갈 부분 -->
+                <li>
+                    <ul id="scores"></ul>
+                </li>
+
+            </ul>
+
         </section>
     </div>
 
+
     <script>
-      // 모든 HTML 문서가 로드된 후 스크립트 실행을 보장합니다.
-      document.addEventListener('DOMContentLoaded', () => {
+      const API_URL = '/api/v1/scores';
 
-        // 1. 전역 상수 및 DOM 요소 선택
-        const API_BASE_URL = '/api/v1/scores';
-        const $scoreListContainer = document.getElementById('score-list-container');
-        const $studentCount = document.getElementById('student-count');
-        const $form = document.getElementById('score-form');
+      const $scores = document.getElementById('scores');
 
-        // 2. 렌더링 함수
-        const renderScores = (scores) => {
-          $scoreListContainer.innerHTML = '';
-          $studentCount.textContent = scores.length;
-          scores.forEach(({ id, maskingName, sum, avg, rank }) => {
-            const listItemHTML = `
-                        <li class="list-group-item d-flex justify-content-between align-items-center" data-id="${id}">
-                            <div>
-                                <a href="/score/detail/${id}" class="text-decoration-none fw-bold">${maskingName}</a>
-                                <span class="text-muted ms-3">
-                                    총점: ${sum}점, 평균: ${avg.toFixed(2)}점, 석차: ${rank}위
-                                </span>
-                            </div>
-                            <button class="btn btn-sm btn-outline-danger del-btn">삭제</button>
-                        </li>
-                    `;
-            $scoreListContainer.insertAdjacentHTML('beforeend', listItemHTML);
-          });
-        };
+      // 화면에 성적목록을 렌더링하는 함수
+      function renderScoreList(data) {
 
-        // 3. 서버 통신 함수
-        const fetchScores = async (sortBy = 'id') => {
-          const url = `${API_BASE_URL}?sort=${sortBy}`;
-          console.log(`[Request] GET ${url}`); // 요청 URL 확인
-          try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`서버 응답 오류: ${res.status}`);
-            const scoreData = await res.json();
-            renderScores(scoreData);
-          } catch (err) {
-            console.error('목록 조회 실패:', err);
-            alert('데이터를 불러오는 데 실패했습니다.');
-          }
-        };
+        // 리셋
+        $scores.innerHTML = '';
 
-        const postScore = async (payload) => {
-          document.querySelectorAll('.error').forEach(el => el.textContent = '');
-          console.log(`[Request] POST ${API_BASE_URL}`, payload);
-          try {
-            const res = await fetch(API_BASE_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-              $form.reset();
-              await fetchScores();
-            } else if (res.status === 400) {
-              const errorData = await res.json();
-              for (const field in errorData) {
-                document.getElementById(field).textContent = errorData[field];
-              }
-            } else {
-              throw new Error(`서버 등록 오류: ${res.status}`);
-            }
-          } catch (err) {
-            console.error('등록 실패:', err);
-            alert('등록에 실패했습니다.');
-          }
-        };
+        // 총 학생 수 렌더링
+        document.getElementById('count').textContent = data.length;
 
-        const deleteScore = async (id) => {
-          if (!confirm('정말 삭제하시겠습니까?')) return;
-          const url = `${API_BASE_URL}/${id}`;
-          console.log(`[Request] DELETE ${url}`);
-          try {
-            const res = await fetch(url, { method: 'DELETE' });
-            if (!res.ok) throw new Error(`서버 삭제 오류: ${res.status}`);
-            await fetchScores();
-          } catch (err) {
-            console.error('삭제 실패:', err);
-            alert('삭제에 실패했습니다.');
-          }
-        };
 
-        // 4. 이벤트 리스너 설정
-        document.querySelector('.sort-links').addEventListener('click', e => {
-          e.preventDefault();
-          if (e.target.matches('a')) {
-            fetchScores(e.target.dataset.sort);
-          }
+        data.forEach(({id, maskingName, sum, avg, rank}) => {
+          $scores.innerHTML += `
+                    <li data-score-id="\${id}">
+                        # 이름: <a href="/score/\${id}">\${maskingName}</a>, 총점: \${sum}점,
+                        평균: \${avg.toFixed(2)}점, 석차: \${rank}
+                        <a href='#' class='del-btn'>삭제</a>
+                    </li>
+                `;
+        });
+      }
+
+      // 서버에서 성적 정보를 가져오는 요청 메서드
+      async function fetchGetScores(sortType='id') {
+        const res = await fetch(API_URL + `?sort=\${sortType}`);
+        const data = await res.json();
+        console.log(data);
+
+        // 화면에 정보 렌더링
+        renderScoreList(data);
+      }
+
+      // 서버로 성적 등록 POST요청을 전송하는 함수
+      async function fetchPostScore({name, kor, eng, math}) {
+
+        // 요청 시작시 에러메시지 리셋
+        document.querySelectorAll('.error').forEach($errorParagraph => {
+          $errorParagraph.textContent = '';
         });
 
-        $form.addEventListener('submit', e => {
-          e.preventDefault();
-          const payload = {
-            studentName: $form.studentName.value,
-            korean: +$form.korean.value,
-            english: +$form.english.value,
-            math: +$form.math.value,
-          };
-          postScore(payload);
+        // POST요청은 단순히 요청만보내는게 아니라
+        // 서버에 데이터를 제공해야함
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentName: name,
+            korean: kor,
+            english: eng,
+            math: math
+          })
         });
-
-        $scoreListContainer.addEventListener('click', e => {
-          if (e.target.matches('.del-btn')) {
-            const id = e.target.closest('li').dataset.id;
-            deleteScore(id);
+        if (res.status === 200) {
+          // 등록된 내용을 렌더링
+          fetchGetScores();
+          document.getElementById('score-form').reset();
+        } else if (res.status === 400) {
+          // 서버의 에러 메시지 파싱
+          const errorJson = await res.json();
+          for (const property in errorJson) {
+            document.getElementById(property).textContent = errorJson[property];
           }
-        });
+        }
+      }
 
-        // 5. 초기 데이터 로딩
-        fetchScores();
+      async function fetchDeleteScore(id) {
+        const res = await fetch(`\${API_URL}/\${id}`, {
+          method: 'DELETE'
+        });
+        if (res.status === 200) {
+          fetchGetScores();
+        } else {
+          alert('삭제 실패!');
+        }
+      }
+
+      //==== 이벤트 리스너 등록 ====//
+      // 정렬처리 이벤트
+      document.querySelector('.sort-link-group').addEventListener('click', e => {
+        e.preventDefault();
+        if (!e.target.matches('a')) return;
+        const sortType = e.target.id;
+        console.log('정렬기준: ', sortType);
+
+        // 서버에 정렬기준을 가지고 목록 조회요청 전송
+        fetchGetScores(sortType);
+
       });
+
+      // 성적 정보 등록 이벤트
+      document.getElementById('createBtn').addEventListener('click', e => {
+
+        e.preventDefault(); // form의 submit시 발생하는 새로고침 방지
+
+        const $form = document.getElementById('score-form');
+        // formData객체 생성
+        const formData = new FormData($form);
+        const scoreObj = Object.fromEntries(formData.entries());
+        console.log(scoreObj);
+
+        // 서버로 POST요청 전송
+        fetchPostScore(scoreObj);
+
+      });
+
+      // 삭제 요청 이벤트 등록
+      $scores.addEventListener('click', e => {
+        if (!e.target.matches('.del-btn')) return;
+        e.preventDefault();
+
+        // 서버에 삭제요청 전송
+        // 클릭한 요소가 가진 서버 id를 읽어내야 함.
+        const id = e.target.closest('li').dataset.scoreId;
+        console.log('id: ', id);
+
+        fetchDeleteScore(id);
+      });
+
+      //==== 실행 코드 ====//
+      fetchGetScores();
     </script>
+
 </body>
+
 </html>
