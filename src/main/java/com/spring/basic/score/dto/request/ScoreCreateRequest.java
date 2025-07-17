@@ -1,5 +1,6 @@
 package com.spring.basic.score.dto.request;
 
+import com.spring.basic.score.entity.Score;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -33,4 +34,18 @@ public class ScoreCreateRequest {
     @Max(value = 100, message = "수학 점수는 100점 이하여야합니다.")
     @NotNull(message = "수학점수는 필수값입니다.")
     private Integer math;
+
+    // DTO를 엔터티로 변환
+    public static Score toEntity(ScoreCreateRequest dto) {
+        Score score = Score.builder()
+                .name(dto.getStudentName())
+                .kor(dto.getKorean())
+                .math(dto.getMath())
+                .eng(dto.getEnglish())
+                .build();
+
+        score.calcTotalAndAverage();
+
+        return score;
+    }
 }

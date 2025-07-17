@@ -7,6 +7,7 @@ import lombok.*;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Score {
     private Long id; // 학번
     private String name; // 이름;
@@ -26,7 +27,7 @@ public class Score {
     }
 
     // 총점 평균을 구하는 메서드
-    private void calcTotalAndAverage() {
+    public void calcTotalAndAverage() {
         this.total = this.kor + this.eng + this.math;
         this.average = this.total / 3.0;
     }
