@@ -22,13 +22,16 @@ public class FeedRepository {
                 .feedId(feedNextId++)
                 .content("하하호호 재밌다.")
                 .writer("호빵맨")
-                .createAt(LocalDateTime.of(2025, 3, 14, 13, 15, 0))
+                .createdAt(LocalDateTime.of(2025, 3, 14, 13, 15, 0))
+                .viewCount(3)
                 .build();
+
         Feed f2 = Feed.builder()
                 .feedId(feedNextId++)
-                .content("산리오 친구들 모여라~~")
+                .content("산리오 칭구들 모여라~~")
                 .writer("헬로키티")
-                .createAt(LocalDateTime.of(2025, 5, 27, 9, 23, 13))
+                .createdAt(LocalDateTime.of(2025, 5, 27, 9, 23, 14))
+                .viewCount(40)
                 .build();
 
         feedStore.put(f1.getFeedId(), f1);
@@ -43,18 +46,18 @@ public class FeedRepository {
     // 데이터 저장 로직
     public void save(Feed feed) {
         feed.setFeedId(feedNextId++);
-        feed.setCreateAt(LocalDateTime.now());
-
         feedStore.put(feed.getFeedId(), feed);
     }
 
     // 데이터 삭제 로직
-    public void delete(Long id) {
-        feedStore.remove(id);
+    public boolean deleteById(Long id) {
+        Feed removed = feedStore.remove(id);
+        return removed != null;
     }
 
     // 데이터 개별 조회 로직
-    public Feed getFeedById(Long id) {
+    public Feed findById(Long id) {
         return feedStore.get(id);
     }
+
 }

@@ -16,6 +16,6 @@ public class Feed {
     private Long feedId; // 피드 식별번호
     private String content; // 피드 내용
     private String writer; // 작성자명
-    private LocalDateTime createAt; // 작성시간
+    private LocalDateTime createdAt; // 작성시간
     private int viewCount; // 조회수
 }
