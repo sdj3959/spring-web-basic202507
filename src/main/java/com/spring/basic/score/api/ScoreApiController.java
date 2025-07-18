@@ -1,6 +1,7 @@
 package com.spring.basic.score.api;
 
 import com.spring.basic.score.dto.request.ScoreCreateRequest;
+import com.spring.basic.score.dto.response.ScoreDetailResponse;
 import com.spring.basic.score.dto.response.ScoreListResponse;
 import com.spring.basic.score.entity.Score;
 import jakarta.validation.Valid;
@@ -82,8 +83,15 @@ public class ScoreApiController {
     public ResponseEntity<?> scoreDetail(@PathVariable Long id) {
         Score score = scoreStore.get(id);
 
+        if (score == null) ResponseEntity.badRequest().body("해당 학번은 존재하지 않습니다.");
 
-        return ResponseEntity.ok(score);
+        // 석차 구하기
+        calculateListRank(new ArrayList<>(scoreStore.values()));
+
+        ScoreDetailResponse reponseDto = ScoreDetailResponse.of(score, scoreStore.size());
+
+
+        return ResponseEntity.ok(reponseDto);
     }
 
 
