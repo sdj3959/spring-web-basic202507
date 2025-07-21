@@ -33,7 +33,8 @@ public class MemberRepository {
     }
 
     // 개별조회하는 기능
-    public void findByAccount() {
+    public Member findByAccount(String account) {
         log.info("서비스로부터 회원 개별조회를 위임받음.");
+        return memberStore.get(account);
     }
 }
