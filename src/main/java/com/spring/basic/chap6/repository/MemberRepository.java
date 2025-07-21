@@ -37,4 +37,10 @@ public class MemberRepository {
         log.info("서비스로부터 회원 개별조회를 위임받음.");
         return memberStore.get(account);
     }
+
+    // 데이터를 저장하는 기능
+    public Member save(Member member) {
+        memberStore.put(member.getAccount(), member);
+        return findByAccount(member.getAccount());
+    }
 }
