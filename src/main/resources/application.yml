@@ -1,0 +1,28 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: spring-web-basic202507
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+  # file upload setting
+  servlet:
+    multipart:
+      max-file-size: 10MB  # ???? ?? 1?? ?? ??? ??
+      max-request-size: 100MB  # ??? ???? ? ?? ??? ? ??
+
+# custom setting
+# ????? ?? ???? ??? ???? ?? ??
+file:
+  upload:
+    location: ${user.home}/spring/upload/
+
+logging:
+  level:
+    root: INFO
+    com.spring.basic: DEBUG
+
+#logging.level.org.springframework.web.servlet.DispatcherServlet=DEBUG
