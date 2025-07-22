@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
 
 // 사용자가 올린 첨부파일 (이미지, 영상 등) 요청을 처리하는 컨트롤러
 @RestController
@@ -37,7 +39,9 @@ public class FileUploadController {
         // 루트 디렉토리 가져오기
         String rootDir = fileUploadConfig.getLocation();
         // 파일명 가져오기
-        String fileName = originFile.getOriginalFilename();
+        String originalFilename = originFile.getOriginalFilename();
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String fileName = UUID.randomUUID().toString() + extension;
         String fullName = rootDir + fileName;
 
         File uploadedLocation = new File(fullName);
@@ -47,6 +51,38 @@ public class FileUploadController {
             originFile.transferTo(uploadedLocation);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("파일 저장 실패!");
+        }
+
+        return ResponseEntity.ok("OK!!");
+    }
+
+    // 다중 파일 업로드
+    @PostMapping("/uploads-multi")
+    public ResponseEntity<?> uploadMultipleFile(
+            @RequestParam("profiles") List<MultipartFile> originFiles
+    ) {
+
+        // 파일을 받았으면 잘 보관 (로컬에 저장)
+
+        // 저장 파일 경로 생성
+        // 루트 디렉토리 가져오기
+        String rootDir = fileUploadConfig.getLocation();
+
+        for (MultipartFile originFile : originFiles) {
+            // 파일명 가져오기
+            String originalFilename = originFile.getOriginalFilename();
+            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String fileName = UUID.randomUUID().toString() + extension;
+            String fullName = rootDir + fileName;
+
+            File uploadedLocation = new File(fullName);
+
+            // 파일 전송 명령
+            try {
+                originFile.transferTo(uploadedLocation);
+            } catch (IOException e) {
+                return ResponseEntity.internalServerError().body("파일 저장 실패!");
+            }
         }
 
         return ResponseEntity.ok("OK!!");
